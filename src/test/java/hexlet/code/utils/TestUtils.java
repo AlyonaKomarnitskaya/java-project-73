@@ -4,15 +4,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.component.JWTHelper;
+import hexlet.code.dto.TaskStatusDto;
 import hexlet.code.dto.UserDto;
 import hexlet.code.model.User;
+import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
+import java.util.Map;
 
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -21,15 +24,25 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @Component
 public class TestUtils {
-
+    public static final String BASE_URL = "/api";
     public static final String TEST_USERNAME = "email@email.com";
     public static final String TEST_USERNAME_2 = "email2@email.com";
+
+    public static final String TEST_STATUS_NAME = "status";
+
+    public static final String TEST_STATUS_NAME_2 = "status_2";
+
+    public static final String STATUS_CONTROLLER_PATH = "/statuses";
 
     private final UserDto testRegistrationDto = new UserDto(
             TEST_USERNAME,
             "fname",
             "lname",
             "pwd"
+    );
+
+    private final TaskStatusDto testStatusDto = new TaskStatusDto(
+            TEST_STATUS_NAME
     );
 
     public UserDto getTestRegistrationDto() {
@@ -42,12 +55,15 @@ public class TestUtils {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TaskStatusRepository taskStatusRepository;
 
     @Autowired
     private JWTHelper jwtHelper;
 
     public void tearDown() {
         userRepository.deleteAll();
+        taskStatusRepository.deleteAll();
     }
 
     public User getUserByEmail(final String email) {
@@ -58,9 +74,22 @@ public class TestUtils {
         return regUser(testRegistrationDto);
     }
 
+    public ResultActions regDefaultStatus(final String byUser) throws Exception {
+        return regStatus(testStatusDto, byUser);
+    }
+
     public ResultActions regUser(final UserDto dto) throws Exception {
         final var request = post(USER_CONTROLLER_PATH)
                 .content(asJson(dto))
+                .contentType(APPLICATION_JSON);
+
+        return perform(request);
+    }
+
+    public ResultActions regStatus(final TaskStatusDto taskStatusDto, final String byUser)
+        throws Exception {
+        final var request = post(BASE_URL + STATUS_CONTROLLER_PATH)
+                .content(asJson(taskStatusDto))
                 .contentType(APPLICATION_JSON);
 
         return perform(request);
