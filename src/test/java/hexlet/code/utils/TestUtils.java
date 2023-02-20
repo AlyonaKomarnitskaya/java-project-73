@@ -4,9 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.component.JWTHelper;
+import hexlet.code.dto.LabelDto;
+import hexlet.code.dto.TaskDto;
 import hexlet.code.dto.TaskStatusDto;
 import hexlet.code.dto.UserDto;
+import hexlet.code.model.Label;
+import hexlet.code.model.TaskStatus;
 import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +22,11 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.util.Map;
+import java.util.Set;
 
+import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
+import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
+import static hexlet.code.controller.TaskStatusController.STATUS_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -27,12 +37,10 @@ public class TestUtils {
     public static final String BASE_URL = "/api";
     public static final String TEST_USERNAME = "email@email.com";
     public static final String TEST_USERNAME_2 = "email2@email.com";
-
     public static final String TEST_STATUS_NAME = "status";
-
     public static final String TEST_STATUS_NAME_2 = "status_2";
-
-    public static final String STATUS_CONTROLLER_PATH = "/statuses";
+    public static final String TEST_LABEL_NAME = "label";
+    public static final String TEST_LABEL_NAME_2 = "label2";
 
     private final UserDto testRegistrationDto = new UserDto(
             TEST_USERNAME,
@@ -45,9 +53,9 @@ public class TestUtils {
             TEST_STATUS_NAME
     );
 
-    public UserDto getTestRegistrationDto() {
-        return testRegistrationDto;
-    }
+    private final LabelDto testLabelDto = new LabelDto(
+            TEST_LABEL_NAME
+    );
 
     @Autowired
     private MockMvc mockMvc;
@@ -59,11 +67,23 @@ public class TestUtils {
     private TaskStatusRepository taskStatusRepository;
 
     @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
+    private LabelRepository labelRepository;
+
+    @Autowired
     private JWTHelper jwtHelper;
 
     public void tearDown() {
-        userRepository.deleteAll();
+        taskRepository.deleteAll();
         taskStatusRepository.deleteAll();
+        labelRepository.deleteAll();
+        userRepository.deleteAll();
+    }
+
+    public UserDto getTestRegistrationDto() {
+        return testRegistrationDto;
     }
 
     public User getUserByEmail(final String email) {
@@ -76,6 +96,27 @@ public class TestUtils {
 
     public ResultActions regDefaultStatus(final String byUser) throws Exception {
         return regStatus(testStatusDto, byUser);
+    }
+
+    public ResultActions regDefaultTask(final String byUser) throws Exception {
+        regDefaultUser();
+        regDefaultLabel(TEST_USERNAME);
+        regDefaultStatus(TEST_USERNAME);
+        final User user = userRepository.findAll().get(0);
+        final TaskStatus taskStatus = taskStatusRepository.findAll().get(0);
+        final Label label = labelRepository.findAll().get(0);
+        final TaskDto testRegTaskDto = new TaskDto(
+                "task",
+                "description",
+                taskStatus.getId(),
+                Set.of(label.getId()),
+                user.getId()
+        );
+        return regTask(testRegTaskDto, byUser);
+    }
+
+    public ResultActions regDefaultLabel(final String byUser) throws Exception {
+        return regLabel(testLabelDto, byUser);
     }
 
     public ResultActions regUser(final UserDto dto) throws Exception {
@@ -92,7 +133,25 @@ public class TestUtils {
                 .content(asJson(taskStatusDto))
                 .contentType(APPLICATION_JSON);
 
-        return perform(request);
+        return perform(request, byUser);
+    }
+
+    public ResultActions regTask(final TaskDto taskDto, final String byUser)
+        throws Exception {
+        final var request = post(BASE_URL + TASK_CONTROLLER_PATH)
+                .content(asJson(taskDto))
+                .contentType(APPLICATION_JSON);
+
+        return perform(request, byUser);
+    }
+
+    public ResultActions regLabel(final LabelDto labelDto, final String byUser)
+        throws Exception {
+        final var request = post(BASE_URL + LABEL_CONTROLLER_PATH)
+                .content(asJson(labelDto))
+                .contentType(APPLICATION_JSON);
+
+        return perform(request, byUser);
     }
 
     public ResultActions perform(final MockHttpServletRequestBuilder request, final String byUser) throws Exception {

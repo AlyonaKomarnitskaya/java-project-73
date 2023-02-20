@@ -18,10 +18,21 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.List;
 
 import static hexlet.code.config.SpringConfig.TEST_PROFILE;
+import static hexlet.code.controller.TaskStatusController.STATUS_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.ID;
-import static hexlet.code.utils.TestUtils.*;
+import static hexlet.code.utils.TestUtils.BASE_URL;
+import static hexlet.code.utils.TestUtils.TEST_STATUS_NAME;
+import static hexlet.code.utils.TestUtils.TEST_STATUS_NAME_2;
+import static hexlet.code.utils.TestUtils.TEST_USERNAME;
+import static hexlet.code.utils.TestUtils.TEST_USERNAME_2;
+import static hexlet.code.utils.TestUtils.asJson;
+import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -32,8 +43,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT, classes = SpringConfig.class)
 public class TaskStatusControllerTest {
-
-    public static final String STATUS_CONTROLLER_PATH = "/statuses";
 
     @Autowired
     private TaskStatusRepository taskStatusRepository;
@@ -49,7 +58,8 @@ public class TaskStatusControllerTest {
     @Test
     public void registration() throws Exception {
         assertEquals(0, taskStatusRepository.count());
-        utils.regDefaultUser().andExpect(status().isCreated());
+        utils.regDefaultUser();
+        utils.regDefaultStatus(TEST_USERNAME).andExpect(status().isCreated());
         assertEquals(1, taskStatusRepository.count());
     }
 
@@ -105,7 +115,7 @@ public class TaskStatusControllerTest {
     public void twiceRegTheSameStatusFail() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus(TEST_USERNAME).andExpect(status().isCreated());
-        utils.regDefaultStatus(TEST_USERNAME).andExpect(status().isBadRequest());
+        utils.regDefaultStatus(TEST_USERNAME).andExpect(status().isUnprocessableEntity());
 
         assertEquals(1, taskStatusRepository.count());
     }

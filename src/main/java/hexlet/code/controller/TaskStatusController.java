@@ -66,7 +66,7 @@ public class TaskStatusController {
 
     @DeleteMapping(ID)
     @Operation(summary = "Delete task status")
-    public void deleteTaskStatus(@PathVariable final long id) {
+    public void deleteTaskStatus(@PathVariable final long id) throws Exception {
         taskStatusRepository.deleteById(id);
     }
 }
