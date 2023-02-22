@@ -12,10 +12,10 @@ import java.util.Set;
 import static javax.persistence.GenerationType.IDENTITY;
 import static javax.persistence.TemporalType.TIMESTAMP;
 
+@Builder
 @Entity
 @Getter
 @Setter
-@Builder
 @Table(name = "tasks")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,7 +23,7 @@ public class Task {
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+    private long id;
 
     @NotBlank
     @Column(unique = true)
@@ -32,13 +32,16 @@ public class Task {
     private String description;
 
     @ManyToOne
+    @JoinColumn(name = "task_status_id")
     private TaskStatus taskStatus;
 
     @ManyToOne
+    @JoinColumn(name = "author_id")
     @NotNull
     private User author;
 
     @ManyToOne
+    @JoinColumn(name = "executor_id")
     private User executor;
 
     @ManyToMany

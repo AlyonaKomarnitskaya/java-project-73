@@ -1,5 +1,6 @@
 package hexlet.code.controller;
 
+import com.querydsl.core.types.Predicate;
 import hexlet.code.dto.TaskDto;
 import hexlet.code.model.Task;
 import hexlet.code.repository.TaskRepository;
@@ -10,11 +11,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
+import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -42,16 +43,14 @@ public class TaskController {
         return taskService.createNewTask(taskDto);
     }
 
+    @Operation(summary = "Get all tasks")
     @ApiResponses(@ApiResponse(responseCode = "200", content =
-            // Указываем тип содержимого ответа
-    @Content(schema = @Schema(implementation = Task.class))
+    @Content(schema =
+    @Schema(implementation = Task.class))
     ))
     @GetMapping
-    @Operation(summary = "Get all tasks")
-    public List<Task> getAll() throws Exception{
-        return taskRepository.findAll()
-                .stream()
-                .toList();
+    public Iterable<Task> getAllTasks(@QuerydslPredicate final Predicate predicate) {
+        return predicate == null ? taskRepository.findAll() : taskRepository.findAll(predicate);
     }
 
     @ApiResponses(@ApiResponse(responseCode = "200"))
@@ -74,4 +73,5 @@ public class TaskController {
     public void deleteTask(@PathVariable final long id) {
         taskRepository.deleteById(id);
     }
+
 }

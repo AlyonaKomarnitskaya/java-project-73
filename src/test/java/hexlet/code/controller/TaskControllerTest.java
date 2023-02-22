@@ -87,14 +87,14 @@ public class TaskControllerTest {
     @Test
     public void getAllTasks() throws Exception {
         utils.regDefaultTask(TEST_USERNAME);
-        final var response = utils.perform(get(BASE_URL + TASK_CONTROLLER_PATH), TEST_USERNAME)
+        final var response = utils.perform(get(BASE_URL + TASK_CONTROLLER_PATH),
+                        TEST_USERNAME)
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
         final List<Task> tasks = fromJson(response.getContentAsString(), new TypeReference<>() {
         });
-
         assertThat(tasks).hasSize(1);
     }
 
