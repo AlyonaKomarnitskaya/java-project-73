@@ -10,7 +10,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -35,7 +43,7 @@ public class TaskStatusController {
     @PostMapping
     @ResponseStatus(CREATED)
     public TaskStatus createNewTaskStatus(@RequestBody @Valid final TaskStatusDto taskStatusDto) {
-        return taskStatusService.createNewTaskStatus(taskStatusDto);
+        return taskStatusService.createTaskStatus(taskStatusDto);
     }
 
     @ApiResponses(@ApiResponse(responseCode = "200", content =
@@ -44,26 +52,37 @@ public class TaskStatusController {
     ))
     @GetMapping
     @Operation(summary = "Get all task statuses")
-    public List<TaskStatus> getAll() throws Exception{
+    public List<TaskStatus> getAll() throws Exception {
         return taskStatusRepository.findAll()
                 .stream()
                 .toList();
     }
 
-    @ApiResponses(@ApiResponse(responseCode = "200"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task status was found"),
+            @ApiResponse(responseCode = "404", description = "Task status with this id wasn`t found")
+    })
     @GetMapping(ID)
     @Operation(summary = "Get task status")
-    public TaskStatus geTaskStatusById(@PathVariable final Long id) {
+    public TaskStatus getTaskStatusById(@PathVariable final Long id) {
         return taskStatusRepository.findById(id).get();
     }
 
-    @PutMapping(ID)
     @Operation(summary = "Update task status")
-    public TaskStatus updateTaskStatus(@PathVariable final long id,
-                                       @RequestBody @Valid final TaskStatusDto taskStatusDto) {
-        return taskStatusService.updateTaskStatus(id, taskStatusDto);
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Task status has been updated"),
+            @ApiResponse(responseCode = "404", description = "Task status with this id wasn`t found")
+    })
+    @PutMapping(ID)
+    public TaskStatus updateStatus(@RequestBody @Valid final TaskStatusDto dto,
+                                   @PathVariable long id) {
+        return taskStatusService.updateTaskStatus(dto, id);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Task status has been deleted"),
+            @ApiResponse(responseCode = "404", description = "Task status with this id wasn`t found")
+    })
     @DeleteMapping(ID)
     @Operation(summary = "Delete task status")
     public void deleteTaskStatus(@PathVariable final long id) throws Exception {

@@ -10,7 +10,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -31,11 +39,14 @@ public class LabelController {
     private final LabelService labelService;
 
     @Operation(summary = "Create new label")
-    @ApiResponse(responseCode = "201", description = "Label created")
+    @ApiResponses(@ApiResponse(responseCode = "201", content =
+    @Content(schema =
+    @Schema(implementation = Label.class)
+    )))
     @PostMapping
     @ResponseStatus(CREATED)
     public Label createNewLabel(@RequestBody @Valid final LabelDto labelDto) {
-        return labelService.createNewLabel(labelDto);
+        return labelService.createLabel(labelDto);
     }
 
     @ApiResponses(@ApiResponse(responseCode = "200", content =
@@ -44,29 +55,41 @@ public class LabelController {
     ))
     @GetMapping
     @Operation(summary = "Get all labels")
-    public List<Label> getAll() throws Exception{
+    public List<Label> getAll() throws Exception {
         return labelRepository.findAll()
                 .stream()
                 .toList();
     }
 
-    @ApiResponses(@ApiResponse(responseCode = "200"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Label was found"),
+            @ApiResponse(responseCode = "404", description = "Label with this id wasn`t found")
+    })
     @GetMapping(ID)
     @Operation(summary = "Get label")
     public Label getLabelById(@PathVariable final Long id) {
         return labelRepository.findById(id).get();
     }
 
-    @PutMapping(ID)
+
     @Operation(summary = "Update label")
-    public Label updateLabel(@PathVariable final long id,
-                             @RequestBody @Valid final LabelDto labelDto) {
-        return labelService.updateLabel(id, labelDto);
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Label has been updated"),
+            @ApiResponse(responseCode = "404", description = "Label with this id wasn`t found")
+    })
+    @PutMapping(ID)
+    public Label updateLabel(@RequestBody @Valid LabelDto labelDto,
+                             @PathVariable long id) {
+        return labelService.updateLabel(labelDto, id);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Label has been deleted"),
+            @ApiResponse(responseCode = "404", description = "Label with this id wasn`t found")
+    })
     @DeleteMapping(ID)
     @Operation(summary = "Delete label")
-    public void deleteLabel(@PathVariable final long id) throws Exception{
+    public void deleteLabel(@PathVariable final long id) throws Exception {
         labelRepository.deleteById(id);
     }
 }

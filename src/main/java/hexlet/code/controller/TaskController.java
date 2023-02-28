@@ -13,7 +13,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
@@ -53,10 +61,13 @@ public class TaskController {
         return predicate == null ? taskRepository.findAll() : taskRepository.findAll(predicate);
     }
 
-    @ApiResponses(@ApiResponse(responseCode = "200"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task was found"),
+            @ApiResponse(responseCode = "404", description = "Task was not found")
+    })
     @GetMapping(ID)
     @Operation(summary = "Get task")
-    public Task geTaskById(@PathVariable final Long id) {
+    public Task getTaskById(@PathVariable final Long id) {
         return taskRepository.findById(id).get();
     }
 
@@ -67,6 +78,10 @@ public class TaskController {
         return taskService.updateTask(id, taskDto);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Task has been deleted"),
+            @ApiResponse(responseCode = "404", description = "Task with this id wasn`t found")
+    })
     @DeleteMapping(ID)
     @Operation(summary = "Delete task")
     @PreAuthorize(TASK_OWNER)

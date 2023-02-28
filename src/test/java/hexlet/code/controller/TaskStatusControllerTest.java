@@ -29,13 +29,13 @@ import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -121,19 +121,19 @@ public class TaskStatusControllerTest {
     }
 
     @Test
-    public void updateStatus() throws Exception {
+    public void updateStatusById() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus(TEST_USERNAME);
-        final Long statusId = taskStatusRepository.findAll().get(0).getId();
-        final var statusDto = new TaskStatusDto(TEST_USERNAME_2);
+        final long statusId = taskStatusRepository.findAll().get(0).getId();
+        TaskStatusDto taskStatusDto = new TaskStatusDto(TEST_STATUS_NAME_2);
         final var updateRequest = put(BASE_URL + STATUS_CONTROLLER_PATH + ID, statusId)
-                .content(asJson(statusDto))
+                .content(asJson(taskStatusDto))
                 .contentType(APPLICATION_JSON);
 
-        utils.perform(updateRequest, TEST_USERNAME).andExpect(status().isOk());
+        utils.perform(updateRequest, TEST_USERNAME_2).andExpect(status().isOk());
         assertTrue(taskStatusRepository.existsById(statusId));
-        assertNull(taskStatusRepository.findByName(TEST_STATUS_NAME).orElse(null));
-        assertNotNull(taskStatusRepository.findByName(TEST_STATUS_NAME_2).orElse(null));
+        assertTrue(taskStatusRepository.findByName(TEST_STATUS_NAME).isEmpty());
+        assertTrue(taskStatusRepository.findByName(TEST_STATUS_NAME_2).isPresent());
     }
 
     @Test

@@ -5,6 +5,6 @@ import hexlet.code.model.Label;
 
 public interface LabelService {
 
-    Label createNewLabel(LabelDto labelDto);
-    Label updateLabel(long id, LabelDto labelDto);
+    Label createLabel(LabelDto labelDto);
+    Label updateLabel(LabelDto labelDto, long id);
 }

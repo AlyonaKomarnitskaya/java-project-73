@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +40,7 @@ public class TestUtils {
     public static final String TEST_USERNAME_2 = "email2@email.com";
     public static final String TEST_STATUS_NAME = "status";
     public static final String TEST_STATUS_NAME_2 = "status_2";
-    public static final String TEST_LABEL_NAME = "label";
+    public static final String TEST_LABEL_NAME = "label1";
     public static final String TEST_LABEL_NAME_2 = "label2";
 
     private final UserDto testRegistrationDto = new UserDto(
@@ -53,9 +54,17 @@ public class TestUtils {
             TEST_STATUS_NAME
     );
 
-    private final LabelDto testLabelDto = new LabelDto(
+    public static final LabelDto LABEL_DTO = new LabelDto(
             TEST_LABEL_NAME
     );
+    public static final LabelDto LABEL_DTO_2 = new LabelDto(
+            TEST_LABEL_NAME_2
+    );
+
+    public UserDto getTestRegistrationDto() {
+        return testRegistrationDto;
+    }
+
 
     @Autowired
     private MockMvc mockMvc;
@@ -80,10 +89,6 @@ public class TestUtils {
         taskStatusRepository.deleteAll();
         labelRepository.deleteAll();
         userRepository.deleteAll();
-    }
-
-    public UserDto getTestRegistrationDto() {
-        return testRegistrationDto;
     }
 
     public User getUserByEmail(final String email) {
@@ -116,21 +121,21 @@ public class TestUtils {
     }
 
     public ResultActions regDefaultLabel(final String byUser) throws Exception {
-        return regLabel(testLabelDto, byUser);
+        return regLabel(LABEL_DTO, byUser);
     }
 
     public ResultActions regUser(final UserDto dto) throws Exception {
-        final var request = post(USER_CONTROLLER_PATH)
+        final var request = MockMvcRequestBuilders.post(BASE_URL + USER_CONTROLLER_PATH)
                 .content(asJson(dto))
                 .contentType(APPLICATION_JSON);
 
         return perform(request);
     }
 
-    public ResultActions regStatus(final TaskStatusDto taskStatusDto, final String byUser)
+    public ResultActions regStatus(final TaskStatusDto dto, final String byUser)
         throws Exception {
         final var request = post(BASE_URL + STATUS_CONTROLLER_PATH)
-                .content(asJson(taskStatusDto))
+                .content(asJson(dto))
                 .contentType(APPLICATION_JSON);
 
         return perform(request, byUser);
