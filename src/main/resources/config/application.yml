@@ -3,6 +3,12 @@ server:
 
 base-url: /api
 
+rollbar_token: ${ROLLBAR_TOKEN}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
 spring:
   application:
     name: taskManager
@@ -17,5 +23,6 @@ spring:
         enabled: true
 
   jpa:
+    show-sql: true
     hibernate:
       ddl-auto: create-drop

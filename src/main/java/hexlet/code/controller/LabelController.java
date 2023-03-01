@@ -50,7 +50,6 @@ public class LabelController {
     }
 
     @ApiResponses(@ApiResponse(responseCode = "200", content =
-            // Указываем тип содержимого ответа
     @Content(schema = @Schema(implementation = Label.class))
     ))
     @GetMapping

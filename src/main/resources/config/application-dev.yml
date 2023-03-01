@@ -2,9 +2,7 @@ server:
   error:
     include-stacktrace: on_param
 
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
+rollbar_token: ""
 
 spring:
   datasource:
@@ -15,12 +13,9 @@ spring:
   jpa:
     show-sql: true
 
-  # Настраиваем консоль Н2
-  # Это позволит нам открыть её в браузере по указанному пути
   h2:
     console:
       enabled: true
-      # Указываем путь, по которому будет открываться консоль
       path: /h2console/
       settings:
         web-allow-others: true
@@ -29,6 +24,3 @@ logging:
   level:
     root: INFO
     web: DEBUG
-    # org.hibernate.type.descriptor.sql: TRACE
-    # org.springframework.security: TRACE
-    # io.hexlet.typoreporter: DEBUG

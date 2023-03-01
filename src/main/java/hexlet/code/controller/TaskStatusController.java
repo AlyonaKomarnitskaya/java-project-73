@@ -47,7 +47,6 @@ public class TaskStatusController {
     }
 
     @ApiResponses(@ApiResponse(responseCode = "200", content =
-            // Указываем тип содержимого ответа
     @Content(schema = @Schema(implementation = TaskStatus.class))
     ))
     @GetMapping

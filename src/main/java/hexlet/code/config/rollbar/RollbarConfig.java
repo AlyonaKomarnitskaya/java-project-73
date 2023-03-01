@@ -41,5 +41,6 @@ public class RollbarConfig {
                 .enabled(activeProfile == "prod")
                 .build();
     }
+
 }
 

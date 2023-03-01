@@ -54,7 +54,6 @@ public class UserController {
 
     @Operation(summary = "Get all users")
     @ApiResponses(@ApiResponse(responseCode = "200", content =
-            // Указываем тип содержимого ответа
     @Content(schema = @Schema(implementation = User.class))
     ))
     @GetMapping
