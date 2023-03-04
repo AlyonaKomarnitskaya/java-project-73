@@ -54,7 +54,7 @@ dependencies {
 
 			'com.querydsl:querydsl-core:5.0.0',
 			'com.querydsl:querydsl-jpa:5.0.0',
-			'com.rollbar:rollbar-spring-boot-webmvc:1.9.0'
+			'com.rollbar:rollbar-spring-boot-webmvc:1.8.1'
 	)
 
 	liquibaseRuntime(
