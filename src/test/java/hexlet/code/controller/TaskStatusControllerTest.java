@@ -6,7 +6,7 @@ import hexlet.code.dto.TaskStatusDto;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.utils.TestUtils;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public class TaskStatusControllerTest {
     @Autowired
     private TestUtils utils;
 
-    @AfterEach
+    @BeforeEach
     public void clear() {
         utils.tearDown();
     }
@@ -120,6 +120,7 @@ public class TaskStatusControllerTest {
         assertEquals(1, taskStatusRepository.count());
     }
 
+
     @Test
     public void updateStatusById() throws Exception {
         utils.regDefaultUser();
@@ -155,7 +156,7 @@ public class TaskStatusControllerTest {
         final Long statusId = taskStatusRepository.findAll().get(0).getId() + 1;
 
         utils.perform(delete(BASE_URL + STATUS_CONTROLLER_PATH + ID, statusId), TEST_USERNAME)
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isNotFound());
         assertEquals(1, taskStatusRepository.count());
     }
 }

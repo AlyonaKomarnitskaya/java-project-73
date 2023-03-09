@@ -157,7 +157,7 @@ public class LabelControllerTest {
         final Long labelId = labelRepository.findAll().get(0).getId() + 1;
 
         utils.perform(delete(BASE_URL + LABEL_CONTROLLER_PATH + ID, labelId), TEST_USERNAME)
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isNotFound());
         assertEquals(1, labelRepository.count());
     }
 }

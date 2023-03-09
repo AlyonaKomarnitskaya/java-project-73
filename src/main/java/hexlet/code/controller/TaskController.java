@@ -3,7 +3,6 @@ package hexlet.code.controller;
 import com.querydsl.core.types.Predicate;
 import hexlet.code.dto.TaskDto;
 import hexlet.code.model.Task;
-import hexlet.code.repository.TaskRepository;
 import hexlet.code.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,10 +40,13 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    private final TaskRepository taskRepository;
-
     @Operation(summary = "Create new task")
-    @ApiResponse(responseCode = "201", description = "Task created")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "The task is created",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Task.class))}),
+            @ApiResponse(responseCode = "400", description = "Bad request",
+                    content = @Content)})
     @PostMapping
     @ResponseStatus(CREATED)
     public Task createNewTask(@RequestBody @Valid final TaskDto taskDto) {
@@ -52,25 +54,31 @@ public class TaskController {
     }
 
     @Operation(summary = "Get all tasks")
-    @ApiResponses(@ApiResponse(responseCode = "200", content =
-    @Content(schema =
-    @Schema(implementation = Task.class))
-    ))
+    @ApiResponse(responseCode = "200", description = "The tasks are found",
+            content = @Content(schema = @Schema(implementation = Task.class)))
     @GetMapping
     public Iterable<Task> getAllTasks(@QuerydslPredicate final Predicate predicate) {
-        return predicate == null ? taskRepository.findAll() : taskRepository.findAll(predicate);
+        return predicate == null ? taskService.getAllTasks() : taskService.getAllTasks(predicate);
     }
 
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Task was found"),
-            @ApiResponse(responseCode = "404", description = "Task was not found")
-    })
+            @ApiResponse(responseCode = "200", description = "The task  is found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Task.class))}),
+            @ApiResponse(responseCode = "404", description = "The task is not found",
+                    content = @Content)})
     @GetMapping(ID)
     @Operation(summary = "Get task")
     public Task getTaskById(@PathVariable final Long id) {
-        return taskRepository.findById(id).get();
+        return taskService.getTaskById(id);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "The task  is updated",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Task.class))}),
+            @ApiResponse(responseCode = "400", description = "Bad request",
+                    content = @Content)})
     @PutMapping(ID)
     @Operation(summary = "Update task")
     public Task updateTask(@PathVariable final long id,
@@ -79,14 +87,14 @@ public class TaskController {
     }
 
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Task has been deleted"),
-            @ApiResponse(responseCode = "404", description = "Task with this id wasn`t found")
-    })
+            @ApiResponse(responseCode = "200", description = "The task is deleted"),
+            @ApiResponse(responseCode = "404", description = "The task is not found",
+                    content = @Content)})
     @DeleteMapping(ID)
     @Operation(summary = "Delete task")
     @PreAuthorize(TASK_OWNER)
     public void deleteTask(@PathVariable final long id) {
-        taskRepository.deleteById(id);
+        taskService.deleteTask(id);
     }
 
 }

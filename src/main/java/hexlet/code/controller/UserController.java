@@ -2,7 +2,6 @@ package hexlet.code.controller;
 
 import hexlet.code.dto.UserDto;
 import hexlet.code.model.User;
-import hexlet.code.repository.UserRepository;
 import hexlet.code.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -41,10 +39,12 @@ public class UserController {
         """;
 
     private final UserService userService;
-    private final UserRepository userRepository;
 
     @Operation(summary = "Create new user")
-    @ApiResponse(responseCode = "201", description = "User created")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "The user is created",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = User.class))})})
     @ResponseStatus(CREATED)
     @PostMapping
     public User createUser(@RequestBody @Valid UserDto userDto) {
@@ -53,31 +53,38 @@ public class UserController {
 
 
     @Operation(summary = "Get all users")
-    @ApiResponses(@ApiResponse(responseCode = "200", content =
-    @Content(schema = @Schema(implementation = User.class))
-    ))
+    @ApiResponse(responseCode = "200", description = "The users are found",
+            content = @Content(schema = @Schema(implementation = User.class)))
     @GetMapping
     public List<User> getAll() throws Exception {
-        return userRepository.findAll()
+        return userService.getAll()
                 .stream()
                 .toList();
     }
 
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User was found"),
-            @ApiResponse(responseCode = "404", description = "User with this id wasn`t found")
-    })
+            @ApiResponse(responseCode = "200", description = "The user is found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = User.class))}),
+            @ApiResponse(responseCode = "404", description = "The user is not found",
+                    content = @Content)})
     @GetMapping(ID)
     @Operation(summary = "Get user")
-    public Optional<User> getUser(@PathVariable long id) throws NoSuchElementException {
-        return userRepository.findById(id);
+    public User getUser(@PathVariable long id) throws NoSuchElementException {
+        return userService.getUserById(id);
     }
 
     @Operation(summary = "Update user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User has been updated"),
-            @ApiResponse(responseCode = "404", description = "User with this id wasn`t found")
-    })
+            @ApiResponse(responseCode = "200", description = "The user is updated",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = User.class))}),
+            @ApiResponse(responseCode = "404", description = "The user is not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden to update",
+                    content = @Content),
+            @ApiResponse(responseCode = "422", description = "Invalid request",
+                    content = @Content)})
     @PreAuthorize(ONLY_OWNER_BY_ID)
     @PutMapping(ID)
     public User updateUser(@PathVariable @Valid long id, @RequestBody @Valid UserDto userDto) {
@@ -86,13 +93,17 @@ public class UserController {
 
     @Operation(summary = "Delete user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User has been deleted"),
-            @ApiResponse(responseCode = "404", description = "User with this id wasn`t found")
-    })
+            @ApiResponse(responseCode = "200", description = "The user is deleted"),
+            @ApiResponse(responseCode = "404", description = "The user is not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "403", description = "Forbidden to delete",
+                    content = @Content),
+            @ApiResponse(responseCode = "422", description = "Data integrity violation",
+                    content = @Content)})
     @PreAuthorize(ONLY_OWNER_BY_ID)
     @DeleteMapping(ID)
     public void deleteUser(@PathVariable long id) {
-        userRepository.deleteById(id);
+        userService.deleteUser(id);
     }
 
 }

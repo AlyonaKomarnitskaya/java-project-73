@@ -7,7 +7,7 @@ import hexlet.code.dto.UserDto;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.utils.TestUtils;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +54,7 @@ public class UserControllerTest {
     @Autowired
     private TestUtils utils;
 
-    @AfterEach
+    @BeforeEach
     public void clear() {
         utils.tearDown();
     }
@@ -135,15 +135,29 @@ public class UserControllerTest {
     }
 
     @Test
-    public void loginFail() throws Exception {
-        final LoginDto loginDto = new LoginDto(
-                utils.getTestRegistrationDto().getFirstName(),
-                utils.getTestRegistrationDto().getLastName(),
-                utils.getTestRegistrationDto().getEmail(),
-                utils.getTestRegistrationDto().getPassword()
-        );
-        final var loginRequest = post(BASE_URL + LOGIN).content(asJson(loginDto)).contentType(APPLICATION_JSON);
-        utils.perform(loginRequest).andExpect(status().isUnauthorized());
+    public void invalidLogin() throws Exception {
+        utils.regUser(new UserDto(TEST_USERNAME, "Peter", "Black", "123"));
+        var loginDto1 = new LoginDto(null, null, "", "123");
+        var loginDto2 = new LoginDto(null, null, TEST_USERNAME, "");
+
+        // login with invalid username
+        final var response1 = utils.perform(post(BASE_URL + "/login")
+                        .content(asJson(loginDto1))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse();
+
+        assertThat(response1.getContentAsString()).isEmpty();
+
+        final var response2 = utils.perform(post(BASE_URL + "/login")
+                        .content(asJson(loginDto1))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andReturn()
+                .getResponse();
+
+        assertThat(response2.getContentAsString()).isEmpty();
     }
 
     @Test

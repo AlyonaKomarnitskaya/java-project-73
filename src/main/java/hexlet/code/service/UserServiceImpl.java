@@ -9,10 +9,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.NoSuchElementException;
 
 
 @Service
@@ -25,6 +27,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private PasswordEncoder passwordEncoder;
 
     @Override
+    public List<User> getAll() {
+        return userRepository.findAll();
+    }
+
+    @Override
+    public User getUserById(long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+    @Override
     public User createNewUser(final UserDto userDto) {
         User user = new User();
         user.setFirstName(userDto.getFirstName());
@@ -36,7 +48,8 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User updateUser(long id, UserDto userDto) {
-        final User userToUpdate = userRepository.findById(id).get();
+        final User userToUpdate = userRepository.findById(id)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         userToUpdate.setFirstName(userDto.getFirstName());
         userToUpdate.setLastName(userDto.getLastName());
         userToUpdate.setEmail(userDto.getEmail());
@@ -46,9 +59,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User getCurrentUser() {
-        return userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).get();
+        return userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new NoSuchElementException("Current user not found"));
     }
 
+    @Override
+    public String getCurrentUserName() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
 
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
@@ -63,5 +81,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
                 user.getPassword(),
                 SecurityConfig.DEFAULT_AUTHORITIES
         );
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        userRepository.delete(user);
     }
 }

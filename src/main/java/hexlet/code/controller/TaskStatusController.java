@@ -2,7 +2,6 @@ package hexlet.code.controller;
 
 import hexlet.code.dto.TaskStatusDto;
 import hexlet.code.model.TaskStatus;
-import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.service.TaskStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,42 +35,48 @@ public class TaskStatusController {
 
     private final TaskStatusService taskStatusService;
 
-    private final TaskStatusRepository taskStatusRepository;
-
     @Operation(summary = "Create new task status")
-    @ApiResponse(responseCode = "201", description = "Task status created")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "The task status is created",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TaskStatus.class))})})
     @PostMapping
     @ResponseStatus(CREATED)
     public TaskStatus createNewTaskStatus(@RequestBody @Valid final TaskStatusDto taskStatusDto) {
         return taskStatusService.createTaskStatus(taskStatusDto);
     }
 
-    @ApiResponses(@ApiResponse(responseCode = "200", content =
-    @Content(schema = @Schema(implementation = TaskStatus.class))
-    ))
+    @ApiResponse(responseCode = "200", description = "The task statuses are found",
+            content = @Content(schema = @Schema(implementation = TaskStatus.class)))
     @GetMapping
     @Operation(summary = "Get all task statuses")
     public List<TaskStatus> getAll() throws Exception {
-        return taskStatusRepository.findAll()
+        return taskStatusService.getAllTaskStatuses()
                 .stream()
                 .toList();
     }
 
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Task status was found"),
-            @ApiResponse(responseCode = "404", description = "Task status with this id wasn`t found")
-    })
+            @ApiResponse(responseCode = "200", description = "The task status is found",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TaskStatus.class))}),
+            @ApiResponse(responseCode = "404", description = "The task status is not found",
+                    content = @Content)})
     @GetMapping(ID)
     @Operation(summary = "Get task status")
     public TaskStatus getTaskStatusById(@PathVariable final Long id) {
-        return taskStatusRepository.findById(id).get();
+        return taskStatusService.getTaskStatusById(id);
     }
 
     @Operation(summary = "Update task status")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Task status has been updated"),
-            @ApiResponse(responseCode = "404", description = "Task status with this id wasn`t found")
-    })
+            @ApiResponse(responseCode = "200", description = "The task status is updated",
+                    content = {@Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TaskStatus.class))}),
+            @ApiResponse(responseCode = "404", description = "The task status is not found",
+                    content = @Content),
+            @ApiResponse(responseCode = "422", description = "Invalid request",
+                    content = @Content)})
     @PutMapping(ID)
     public TaskStatus updateStatus(@RequestBody @Valid final TaskStatusDto dto,
                                    @PathVariable long id) {
@@ -85,6 +90,6 @@ public class TaskStatusController {
     @DeleteMapping(ID)
     @Operation(summary = "Delete task status")
     public void deleteTaskStatus(@PathVariable final long id) throws Exception {
-        taskStatusRepository.deleteById(id);
+        taskStatusService.deleteTaskStatus(id);
     }
 }
