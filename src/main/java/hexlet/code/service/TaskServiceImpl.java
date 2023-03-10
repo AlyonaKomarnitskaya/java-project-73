@@ -15,8 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -55,10 +53,32 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Task createNewTask(final TaskDto taskDto) {
-        final Task task = fromDto(taskDto);
-        return taskRepository.save(task);
+    public Task createNewTask(TaskDto taskDto) {
+        User executor = null;
+        if (Objects.nonNull(taskDto.getExecutorId())) {
+            executor = userRepository
+                    .findById(taskDto.getExecutorId())
+                    .orElseThrow(() -> new NoSuchElementException("Executor not found"));
+        }
+
+        List<Label> labels = null;
+        if (Objects.nonNull(taskDto.getLabelIds()) && taskDto.getLabelIds().size() > 0) {
+            labels = taskDto.getLabelIds().stream()
+                    .map(labelService::getLabelById)
+                    .collect(Collectors.toList());
+        }
+
+        Task newTask = Task.builder()
+                .name(taskDto.getName())
+                .description(taskDto.getDescription())
+                .taskStatus(taskStatusService.getTaskStatusById(taskDto.getTaskStatusId()))
+                .author(userService.getCurrentUser())
+                .labels(labels)
+                .executor(executor).build();
+
+        return taskRepository.save(newTask);
     }
+
 
     @Override
     public Task updateTask(long id, TaskDto taskDto) {
@@ -82,33 +102,8 @@ public class TaskServiceImpl implements TaskService {
             List<Label> labels = taskDto.getLabelIds().stream()
                     .map(labelService::getLabelById)
                     .collect(Collectors.toList());
-            task.setLabels((Set<Label>) labels);
+            task.setLabels(labels);
         }
         return taskRepository.save(task);
-    }
-
-    private Task fromDto(final TaskDto dto) {
-        final User author = userService.getCurrentUser();
-        final User executor = Optional.ofNullable(dto.getExecutorId())
-                .map(User::new)
-                .orElse(null);
-        final TaskStatus taskStatus = Optional.ofNullable(dto.getTaskStatusId())
-                .map(TaskStatus::new)
-                .orElse(null);
-        final Set<Label> labels = Optional.ofNullable(dto.getLabelIds())
-                .orElse(Set.of())
-                .stream()
-                .filter(Objects::nonNull)
-                .map(Label::new)
-                .collect(Collectors.toSet());
-
-        return Task.builder()
-                .author(author)
-                .executor(executor)
-                .taskStatus(taskStatus)
-                .labels(labels)
-                .name(dto.getName())
-                .description(dto.getDescription())
-                .build();
     }
 }

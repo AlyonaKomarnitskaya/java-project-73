@@ -9,6 +9,7 @@ import java.util.List;
 public interface TaskService {
 
     Task createNewTask(TaskDto taskDto);
+
     Task updateTask(long id, TaskDto taskDto);
     List<Task> getAllTasks();
     List<Task> getAllTasks(Predicate predicate);
