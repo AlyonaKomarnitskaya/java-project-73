@@ -1,6 +1,7 @@
 package hexlet.code.service;
 
 import hexlet.code.dto.TaskStatusDto;
+import hexlet.code.exception.InvalidElementException;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,7 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     @Override
     public TaskStatus getTaskStatusById(long id) {
         return taskStatusRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Task status not found"));
+                .orElseThrow(() -> InvalidElementException.invalidElement("Task status not found"));
     }
 
     @Override
@@ -38,7 +39,7 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     @Override
     public TaskStatus updateTaskStatus(TaskStatusDto taskStatusDto, long id) {
         final TaskStatus taskStatusToUpdate = taskStatusRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Task status not found"));
+                .orElseThrow(() -> InvalidElementException.invalidElement("Task status not found"));
         taskStatusToUpdate.setName(taskStatusDto.getName());
         return taskStatusRepository.save(taskStatusToUpdate);
     }

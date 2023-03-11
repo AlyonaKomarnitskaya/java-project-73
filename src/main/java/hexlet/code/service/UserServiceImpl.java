@@ -2,6 +2,7 @@ package hexlet.code.service;
 
 import hexlet.code.config.security.SecurityConfig;
 import hexlet.code.dto.UserDto;
+import hexlet.code.exception.InvalidElementException;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 
 @Service
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User getCurrentUser() {
         return userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName())
-                .orElseThrow(() -> new NoSuchElementException("Current user not found"));
+                .orElseThrow(() -> InvalidElementException.invalidElement("Current user not found"));
     }
 
     @Override

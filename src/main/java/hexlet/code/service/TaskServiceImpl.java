@@ -2,6 +2,7 @@ package hexlet.code.service;
 
 import com.querydsl.core.types.Predicate;
 import hexlet.code.dto.TaskDto;
+import hexlet.code.exception.InvalidElementException;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -43,7 +43,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task getTaskById(long id) {
         return taskRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Task not found"));
+                .orElseThrow(() -> InvalidElementException.invalidElement("Task not found"));
     }
 
     @Override
@@ -53,25 +53,25 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Task createNewTask(TaskDto taskDto) {
+    public Task createNewTask(TaskDto dto) {
         User executor = null;
-        if (Objects.nonNull(taskDto.getExecutorId())) {
+        if (Objects.nonNull(dto.getExecutorId())) {
             executor = userRepository
-                    .findById(taskDto.getExecutorId())
-                    .orElseThrow(() -> new NoSuchElementException("Executor not found"));
+                    .findById(dto.getExecutorId())
+                    .orElseThrow(() -> InvalidElementException.invalidElement("Executor not found"));
         }
 
         List<Label> labels = null;
-        if (Objects.nonNull(taskDto.getLabelIds()) && taskDto.getLabelIds().size() > 0) {
-            labels = taskDto.getLabelIds().stream()
+        if (Objects.nonNull(dto.getLabelIds()) && dto.getLabelIds().size() > 0) {
+            labels = dto.getLabelIds().stream()
                     .map(labelService::getLabelById)
                     .collect(Collectors.toList());
         }
 
         Task newTask = Task.builder()
-                .name(taskDto.getName())
-                .description(taskDto.getDescription())
-                .taskStatus(taskStatusService.getTaskStatusById(taskDto.getTaskStatusId()))
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .taskStatus(taskStatusService.getTaskStatusById(dto.getTaskStatusId()))
                 .author(userService.getCurrentUser())
                 .labels(labels)
                 .executor(executor).build();
@@ -81,25 +81,25 @@ public class TaskServiceImpl implements TaskService {
 
 
     @Override
-    public Task updateTask(long id, TaskDto taskDto) {
+    public Task updateTask(long id, TaskDto dto) {
         Task task = getTaskById(id);
-        task.setName(taskDto.getName());
-        task.setDescription(taskDto.getDescription());
+        task.setName(dto.getName());
+        task.setDescription(dto.getDescription());
 
-        if (Objects.nonNull(taskDto.getExecutorId())) {
+        if (Objects.nonNull(dto.getExecutorId())) {
             User executor = userRepository
-                    .findById(taskDto.getExecutorId())
-                    .orElseThrow(() -> new NoSuchElementException("Executor not found"));
+                    .findById(dto.getExecutorId())
+                    .orElseThrow(() -> InvalidElementException.invalidElement("Executor not found"));
             task.setExecutor(executor);
         }
 
         TaskStatus taskStatus = taskStatusService.getTaskStatusById(
-                taskDto.getTaskStatusId()
+                dto.getTaskStatusId()
         );
         task.setTaskStatus(taskStatus);
 
-        if (Objects.nonNull(taskDto.getLabelIds()) && taskDto.getLabelIds().size() > 0) {
-            List<Label> labels = taskDto.getLabelIds().stream()
+        if (Objects.nonNull(dto.getLabelIds()) && dto.getLabelIds().size() > 0) {
+            List<Label> labels = dto.getLabelIds().stream()
                     .map(labelService::getLabelById)
                     .collect(Collectors.toList());
             task.setLabels(labels);
