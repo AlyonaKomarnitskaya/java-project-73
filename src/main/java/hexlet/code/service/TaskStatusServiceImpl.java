@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @Transactional
@@ -46,8 +45,8 @@ public class TaskStatusServiceImpl implements TaskStatusService {
 
     @Override
     public void deleteTaskStatus(long id) {
-        TaskStatus taskStatus = taskStatusRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Task status not found"));
+        final TaskStatus taskStatus = taskStatusRepository.findById(id)
+                .orElseThrow(() -> InvalidElementException.invalidElement("Task status not found"));
         taskStatusRepository.delete(taskStatus);
     }
 }
