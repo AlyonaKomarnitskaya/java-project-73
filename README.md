@@ -5,6 +5,7 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/e5a3ab54129da28501f6/test_coverage)](https://codeclimate.com/github/LenaKomarnitskaya/java-project-73/test_coverage)
 
 
+
 ## Менеджер задач
 
 [Task Manager](https://java-project-73-production-5299.up.railway.app/) - система управления задачами. Она позволяет ставить задачи, назначать исполнителей и менять их статусы. Для работы с системой требуется регистрация и аутентификация.
